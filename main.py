@@ -7,35 +7,36 @@ states = ['alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 
 
 url = "http://www.armslist.com"
 
+headers = {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.89 Safari/537.36'}
 def main():
     with open('data.csv', 'w', newline='') as f:
         thewriter = csv.writer(f)
         for i in states:
-            query(i)
+            query(i, thewriter)
 
-def query(location):
+def query(location, thewriter):
     '''
         Function for states
     '''
     # Load initial query page
-    page = requests.get('%s/classifieds/search?location=%s&category=guns&posttype=7&ships=False' % (url, location))
+    page = requests.get('%s/classifieds/search?location=%s&category=guns&posttype=7&ships=False' % (url, location), headers = headers)
 
     # Page Parser
     soup = BeautifulSoup(page.content, 'html.parser')
 
     pagerange = 3 #int(soup.ul.findall('li')[-2].a.string)
     for i in range(1, pagerange+1):
-        page = requests.get('%s/classifieds/search?location=%s&category=guns&posttype=7&ships=False&page=%d' % (url, location, i))
+        page = requests.get('%s/classifieds/search?location=%s&category=guns&posttype=7&ships=False&page=%d' % (url, location, i), headers = headers)
         soup = BeautifulSoup(page.content, 'html.parser')
-        for ref in soup.find_all('div', href=True):
-            scrape(ref, location)
+        for ref in soup.find_all('div', href = True):
+            scrape(ref, location, thewriter)
 
 
-def scrape(ref, location):
+def scrape(ref, location, thewriter):
     '''
         Function for listings
     '''
-    page = requests.get('%s%s' % (url, ref))
+    page = requests.get('%s%s' % (url, ref), headers = headers)
     soup = BeautifulSoup(page.content, 'html.parser')
 
     # for in individual listings
@@ -70,3 +71,5 @@ def scrape(ref, location):
             #     print(k.string) #prints category, manufacturer, action, caliber, but problem is that if one of the
             #                     #four categories is missing it prints into wrong category. the spans are not individually marked
     thewriter.writerow([title, price, location, post_id, listed_on, category, manufacturer, action])
+
+main()
