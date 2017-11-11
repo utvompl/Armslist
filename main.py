@@ -11,8 +11,11 @@ headers = {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWe
 def main():
     with open('data.csv', 'w', newline='') as f:
         thewriter = csv.writer(f)
+        thewriter.writerow(['title', 'trade_type', 'price', 'location', 'post_id', 'listed_on', 'category', 'manufacturer', 'action'])
+
         for i in states:
             query(i, thewriter)
+    return 0
 
 def query(location, thewriter):
     '''
@@ -29,21 +32,29 @@ def query(location, thewriter):
         page = requests.get('%s/classifieds/search?location=%s&category=guns&posttype=7&ships=False&page=%d' % (url, location, i), headers = headers)
         soup = BeautifulSoup(page.content, 'html.parser')
         for ref in soup.find_all('div', href = True):
-            scrape(ref, location, thewriter)
+            scrape(ref['href'], location, thewriter)
+    return 0
 
 
 def scrape(ref, location, thewriter):
     '''
         Function for listings
     '''
+    if ref == None:
+        return -1
     page = requests.get('%s%s' % (url, ref), headers = headers)
     soup = BeautifulSoup(page.content, 'html.parser')
 
+    price = 'N/A'
+    trade_type = 'N/A'
+    listed_on = 'N/A'
+    post_id = 'N/A'
+
     # for in individual listings
     for i in soup.find_all('span', class_={'user-id', 'price', 'date'}):
-        if i.string[0] == '$':
+        if i.string[2] == '$':
             trade_type = "Sell/Trade"
-            price = i.string[2:]
+            price = i.string[4:]
 
         elif i.string == "Offer":
             price = '.'
@@ -55,21 +66,24 @@ def scrape(ref, location, thewriter):
         elif i.string[:8] == 'post id:':
             post_id = i.string[8:]
 
+    category = 'N/A'
+    manufacturer = 'N/A'
+    action = 'N/A'
+
     # for getting category in individual listings
     for i in soup.find_all('ul', class_='category'):
         for j in i.find_all('li'):
             li_s = j.find_all('span')
             if li_s[0] == 'CATEGORY':
-                category = li_s[1]
+                category = li_s[1].string
             elif li_s[0] == "MANUFACTURER":
-                manufacturer = li_s[1]
+                manufacturer = li_s[1].string[2:]
             elif li_s[0] == "ACTION":
-                action = li_s[1]
+                action = li_s[1].string[2:]
 
+    title = 'N/A'
     title = soup.find_all('h1')[0].string
-            # for k in j.find_all('span')[1]:categories is m
-            #     print(k.string) #prints category, manufacturer, action, caliber, but problem is that if one of the
-            #                     #four categories is missing it prints into wrong category. the spans are not individually marked
-    thewriter.writerow([title, price, location, post_id, listed_on, category, manufacturer, action])
+    thewriter.writerow([title, trade_type, price, location, post_id, listed_on, category, manufacturer, action])
+    return 0
 
 main()
