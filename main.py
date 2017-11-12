@@ -4,11 +4,11 @@ from lxml import html
 import requests
 
 states = ['alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 'connecticut', 'delaware',\
-    'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa', 'kansas', 'kentucy', 'louisiana',\
-    'maine', 'maryland', 'massachusetts', 'michigan', 'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska',\
-    'nevada', 'new-hampshire', 'new-jersey', 'new-mexico', 'new-york', 'north-carolina', 'north-dakota', 'ohio',\
+ 'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa', 'kansas', 'kentucy', 'louisiana',\
+  'maine', 'maryland', 'massachusetts', 'michigan', 'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska',\
+   'nevada', 'new-hampshire', 'new-jersey', 'new-mexico', 'new-york', 'north-carolina', 'north-dakota', 'ohio',\
     'oklahoma', 'oregon', 'pennsylvania', 'rhode-island', 'south-carolina', 'south-dakota', 'tennessee', 'texas',\
-    'utah', 'vermont', 'virginia', 'washington', 'west-virginia', 'wisconsin', 'wyoming']
+     'utah', 'vermont', 'virginia', 'washington', 'west-virginia', 'wisconsin', 'wyoming']
 
 url = "http://www.armslist.com"
 
@@ -81,14 +81,19 @@ def scrape(ref, location, thewriter):
             li_s = j.find_all('span')
             if li_s[0] == 'CATEGORY':
                 category = li_s[1].string
-            elif li_s[0] == "MANUFACTURER":
+            elif li_s[0] == "Manufacturer":
                 manufacturer = li_s[1].string[2:]
-            elif li_s[0] == "ACTION":
+            elif li_s[0] == "Action":
                 action = li_s[1].string[2:]
+
+    description = 'N/A'
+    for k in soup.find_all('div', class_='postContent'):
+        description = k.get_text(strip = True)
+
 
     title = 'N/A'
     title = soup.find_all('h1')[0].string
-    thewriter.writerow([title, trade_type, price, location, post_id, listed_on, category, manufacturer, action])
+    thewriter.writerow([title, trade_type, price, location, post_id, listed_on, category, manufacturer, action, description])
     return 0
 
 main()
