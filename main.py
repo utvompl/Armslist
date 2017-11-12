@@ -4,7 +4,7 @@ from lxml import html
 import requests
 
 states = ['alabama', 'alaska', 'arizona', 'arkansas', 'california', 'colorado', 'connecticut', 'delaware',\
- 'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa', 'kansas', 'kentucy', 'louisiana',\
+ 'florida', 'georgia', 'hawaii', 'idaho', 'illinois', 'indiana', 'iowa', 'kansas', 'kentucky', 'louisiana',\
   'maine', 'maryland', 'massachusetts', 'michigan', 'minnesota', 'mississippi', 'missouri', 'montana', 'nebraska',\
    'nevada', 'new-hampshire', 'new-jersey', 'new-mexico', 'new-york', 'north-carolina', 'north-dakota', 'ohio',\
     'oklahoma', 'oregon', 'pennsylvania', 'rhode-island', 'south-carolina', 'south-dakota', 'tennessee', 'texas',\
@@ -14,10 +14,9 @@ url = "http://www.armslist.com"
 
 headers = {'User-Agent':'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/62.0.3202.89 Safari/537.36'}
 def main():
-    with open('data.csv', 'w', newline='') as f:
+    with open('data.csv', 'w', newline='', encoding = 'UTF-8') as f:
         thewriter = csv.writer(f)
-        thewriter.writerow(['title', 'trade_type', 'price', 'location', 'post_id', 'listed_on', 'category', 'manufacturer', 'action'])
-
+ 
         for i in states:
             query(i, thewriter)
     return 0
@@ -79,11 +78,11 @@ def scrape(ref, location, thewriter):
     for i in soup.find_all('ul', class_='category'):
         for j in i.find_all('li'):
             li_s = j.find_all('span')
-            if li_s[0] == 'CATEGORY':
+            if li_s[0].string == 'CATEGORY':
                 category = li_s[1].string
-            elif li_s[0] == "Manufacturer":
+            elif li_s[0].string == "Manufacturer":
                 manufacturer = li_s[1].string[2:]
-            elif li_s[0] == "Action":
+            elif li_s[0].string == "Action":
                 action = li_s[1].string[2:]
 
     description = 'N/A'
